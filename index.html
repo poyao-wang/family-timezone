@@ -12,6 +12,7 @@
 .next{border:1px solid #e3e2e0;border-radius:14px;padding:18px 20px;background:#f7f9fc;margin-bottom:20px}
 .next h2{margin:0 0 6px;font-size:15px;color:#2383e2;font-weight:700}
 .next .big{font-size:24px;font-weight:800;margin:4px 0}
+.zline{display:block;padding:2px 0}
 .next .sub{font-size:13px;color:#787774;line-height:1.7}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 @media(max-width:560px){.cards{grid-template-columns:1fr;gap:10px}.card{padding:12px 14px}.name{font-size:14px}input{font-size:16px;padding:8px}.info{font-size:13px}.next .big{font-size:19px;line-height:1.9}.next{padding:14px 16px}}
@@ -79,15 +80,20 @@ function loadNext(){
   const u=toUTC(s.next,s.tz||'Europe/Berlin');
   if(u===null){document.getElementById('next-big').textContent='（時間格式錯誤）';return;}
   const main=Z.map(z=>{const p=parts(u,z.tz);
-    return `${z.flag} ${WEEK[new Date(Date.UTC(p.year,p.month-1,p.day)).getUTCDay()]} ${p.month}/${p.day} <b>${p.hour}:${p.minute}</b>`}).join('　｜　');
+    return `<span class="zline">${z.flag} ${WEEK[new Date(Date.UTC(p.year,p.month-1,p.day)).getUTCDay()]} ${p.month}/${p.day} <b>${p.hour}:${p.minute}</b></span>`}).join('');
   document.getElementById('next-big').innerHTML=main;
   const bad=Z.filter(z=>status(+parts(u,z.tz).hour)[0]==='bad').map(z=>z.name.split(' ')[0]);
   let extra=(s.note?('📝 '+s.note+'<br>'):'');
   const now=Date.now();
   if(u<now){extra+='<span style="color:#e03e3e">此時間已過，等 Poyao 更新下次時間</span>';}
-  else if(bad.length){extra+='⚠️ '+bad.join('、')+' 是睡覺時間';}
-  else{extra+='✅ 三地都在清醒時間';}
+  else{
+    const d=Math.floor((u-now)/864e5), h=Math.floor(((u-now)%864e5)/36e5);
+    extra+=`⏳ 還有 ${d?d+' 天 ':''}${h} 小時<br>`;
+    extra+=bad.length?('⚠️ '+bad.join('、')+' 是睡覺時間'):('✅ 三地都在清醒時間');
+  }
   document.getElementById('next-sub').innerHTML=extra;
+  /* 換算器自動對到下次視訊時間，整頁一致 */
+  utc=u;active='de';Z.forEach(z=>{document.getElementById('i-'+z.id).value=fmt(u,z.tz)});render();
  }).catch(()=>{document.getElementById('next-big').textContent='暫無安排';});
 }
 loadNext();
