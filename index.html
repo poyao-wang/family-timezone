@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>家人視訊時間協調</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:20px;font-family:-apple-system,"Segoe UI","Noto Sans TC",sans-serif;background:#fff;color:#37352f}
+.wrap{max-width:760px;margin:auto}
+.next{border:1px solid #e3e2e0;border-radius:14px;padding:18px 20px;background:#f7f9fc;margin-bottom:20px}
+.next h2{margin:0 0 6px;font-size:15px;color:#2383e2;font-weight:700}
+.next .big{font-size:24px;font-weight:800;margin:4px 0}
+.next .sub{font-size:13px;color:#787774;line-height:1.7}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:560px){.card{padding:10px}.name{font-size:13px}input{font-size:12px;padding:6px 4px}.info{font-size:11px}}
+.card{border:1px solid #e3e2e0;border-radius:12px;padding:16px;background:#fbfbfa;transition:.15s}
+.card.active{border-color:#2383e2;box-shadow:0 0 0 2px #2383e233;background:#fff}
+.flag{font-size:26px}.name{font-weight:700;font-size:16px;margin-top:4px}.who{font-size:12px;color:#787774;margin-bottom:10px}
+input{width:100%;font-size:15px;padding:8px;border:1px solid #d3d1cb;border-radius:8px;background:#fff;font-family:inherit}
+.info{margin-top:10px;font-size:13px;line-height:1.7;color:#55534e}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.ok{background:#dbeddb;color:#1c3829}.mid{background:#fdecc8;color:#402c1b}.bad{background:#ffe2dd;color:#5d1715}
+.bar{display:flex;gap:10px;margin:16px 0 0;flex-wrap:wrap}
+button{border:1px solid #d3d1cb;background:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:14px}button:hover{background:#f1f1ef}
+.sum{margin-top:16px;padding:12px 14px;border-radius:10px;background:#f1f1ef;font-size:14px;line-height:1.7}
+.tl{margin-bottom:18px;padding:14px 14px 8px;border:1px solid #e3e2e0;border-radius:12px}
+.tlrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.tlf{width:28px;font-size:20px;text-align:center}
+.track{position:relative;flex:1;height:26px;display:flex;border-radius:6px;overflow:visible}
+.track i{flex:1;display:block}.track i:first-child{border-radius:6px 0 0 6px}.track i:last-child{border-radius:0 6px 6px 0}
+.track .g{background:#a8d8b0}.track .y{background:#f6dc9c}.track .r{background:#d6d4cf}
+.pin{position:absolute;top:-4px;bottom:-4px;width:3px;background:#e03e3e;border-radius:2px;transform:translateX(-1.5px)}
+.pin b{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:11px;color:#fff;background:#e03e3e;padding:0 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.tlrow:first-child .pin b{display:block}
+.axis{display:block;margin-left:36px;font-size:11px;color:#9b9a97;position:relative;height:16px}
+.axis span{position:absolute;transform:translateX(-50%)}
+.legend{font-size:11px;color:#787774;margin:4px 0 6px 36px}
+.legend u{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 3px 0 8px;vertical-align:middle;text-decoration:none}
+h3.sec{font-size:14px;color:#787774;font-weight:600;margin:22px 0 10px;border-top:1px solid #e3e2e0;padding-top:16px}
+</style></head><body><div class="wrap">
+
+<div class="next" id="next">
+  <h2>📅 下次家庭視訊</h2>
+  <div class="big" id="next-big">載入中…</div>
+  <div class="sub" id="next-sub"></div>
+</div>
+
+<h3 class="sec">自由換算</h3>
+<div class="tl" id="tl"></div>
+<div class="cards" id="cards"></div>
+<div class="bar"><button id="m1h">−1 小時</button><button id="now">⏱ 現在</button><button id="p1h">+1 小時</button></div>
+<div class="sum" id="sum"></div>
+
+</div>
+<script>
+const Z=[
+ {id:'us',flag:'🇺🇸',name:'美國 · 底特律',who:'姐姐',tz:'America/Detroit'},
+ {id:'de',flag:'🇩🇪',name:'德國 · 漢諾威',who:'我',tz:'Europe/Berlin'},
+ {id:'tw',flag:'🇹🇼',name:'台灣 · 台北',who:'媽媽 & 弟弟',tz:'Asia/Taipei'}];
+const pad=n=>String(n).padStart(2,'0');
+function parts(ms,tz){const f=new Intl.DateTimeFormat('en-CA',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+ const o={};f.formatToParts(new Date(ms)).forEach(p=>o[p.type]=p.value);return o;}
+function offset(ms,tz){const p=parts(ms,tz);return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Math.floor(ms/1000)*1000;}
+function toUTC(str,tz){const m=str.match(/^(\d+)-(\d+)-(\d+)T(\d+):(\d+)/);if(!m)return null;
+ const g=Date.UTC(m[1],m[2]-1,m[3],m[4],m[5]);let u=g-offset(g,tz);u=g-offset(u,tz);return u;}
+function fmt(ms,tz){const p=parts(ms,tz);return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;}
+function gmt(ms,tz){const o=offset(ms,tz)/36e5;return 'UTC'+(o>=0?'+':'−')+Math.abs(o);}
+function status(h){if(h>=8&&h<22)return['ok','😀 適合視訊'];if((h>=7&&h<8)||(h>=22&&h<23))return['mid','😴 有點早／晚'];return['bad','🌙 睡覺時間'];}
+const days=['日','一','二','三','四','五','六'];
+let utc=toUTC(fmt(Date.now(),'Europe/Berlin'),'Europe/Berlin');let active='de';
+
+/* ===== 下次視訊公告：載入 schedule.json ===== */
+const WEEK=['週日','週一','週二','週三','週四','週五','週六'];
+function loadNext(){
+ fetch('schedule.json?nocache='+Date.now()).then(r=>r.json()).then(s=>{
+  if(!s.next){document.getElementById('next-big').textContent='暫無安排';return;}
+  const u=toUTC(s.next,s.tz||'Europe/Berlin');
+  if(u===null){document.getElementById('next-big').textContent='（時間格式錯誤）';return;}
+  const main=Z.map(z=>{const p=parts(u,z.tz);
+    return `${z.flag} ${WEEK[new Date(Date.UTC(p.year,p.month-1,p.day)).getUTCDay()]} ${p.month}/${p.day} <b>${p.hour}:${p.minute}</b>`}).join('　｜　');
+  document.getElementById('next-big').innerHTML=main;
+  const bad=Z.filter(z=>status(+parts(u,z.tz).hour)[0]==='bad').map(z=>z.name.split(' ')[0]);
+  let extra=(s.note?('📝 '+s.note+'<br>'):'');
+  const now=Date.now();
+  if(u<now){extra+='<span style="color:#e03e3e">此時間已過，等 Poyao 更新下次時間</span>';}
+  else if(bad.length){extra+='⚠️ '+bad.join('、')+' 是睡覺時間';}
+  else{extra+='✅ 三地都在清醒時間';}
+  document.getElementById('next-sub').innerHTML=extra;
+ }).catch(()=>{document.getElementById('next-big').textContent='暫無安排';});
+}
+loadNext();
+
+const box=document.getElementById('cards');
+Z.forEach(z=>{box.insertAdjacentHTML('beforeend',`<div class="card" id="c-${z.id}"><div class="flag">${z.flag}</div><div class="name">${z.name}</div><div class="who">${z.who}</div><input type="datetime-local" step="300" id="i-${z.id}"><div class="info" id="n-${z.id}"></div></div>`);
+ const el=document.getElementById('i-'+z.id);
+ const h=()=>{const u=toUTC(el.value,z.tz);if(u===null)return;utc=u;active=z.id;render();};
+ el.addEventListener('input',h);el.addEventListener('change',h);});
+const tl=document.getElementById('tl');
+tl.style.paddingTop='26px';
+tl.innerHTML=Z.map(z=>`<div class="tlrow"><div class="tlf">${z.flag}</div><div class="track" id="t-${z.id}">${Array.from({length:24},(_,h)=>`<i class="${{ok:'g',mid:'y',bad:'r'}[status(h)[0]]}" title="${h}:00"></i>`).join('')}<div class="pin" id="p-${z.id}"><b></b></div></div></div>`).join('')
+ +'<div class="axis">'+[0,3,6,9,12,15,18,21,24].map(h=>`<span style="left:${h/24*100}%">${h}</span>`).join('')+'</div>'
+ +'<div class="legend">24 小時（各地當地時間）<u style="background:#a8d8b0"></u>適合<u style="background:#f6dc9c"></u>早／晚<u style="background:#d6d4cf"></u>睡覺</div>';
+function render(){Z.forEach(z=>{const el=document.getElementById('i-'+z.id);
+  if(active!==z.id||document.activeElement!==el)el.value=fmt(utc,z.tz);
+  document.getElementById('c-'+z.id).classList.toggle('active',active===z.id);
+  const p=parts(utc,z.tz),wd=days[new Date(Date.UTC(p.year,p.month-1,p.day)).getUTCDay()],[c,t]=status(+p.hour);
+  const pin=document.getElementById('p-'+z.id);pin.style.left=((+p.hour+ +p.minute/60)/24*100)+'%';pin.firstChild.textContent=p.hour+':'+p.minute;
+  document.getElementById('n-'+z.id).innerHTML=`週${wd} ${p.month}/${p.day} ${p.hour}:${p.minute} · ${gmt(utc,z.tz)}<br><span class="badge ${c}">${t}</span>`;});
+ const L=Z.map(z=>{const p=parts(utc,z.tz);return `${z.flag} ${p.month}/${p.day} ${p.hour}:${p.minute}`}).join('　｜　');
+ const bad=Z.filter(z=>status(+parts(utc,z.tz).hour)[0]==='bad').map(z=>z.name.split(' ')[0]);
+ document.getElementById('sum').innerHTML='<b>'+L+'</b><br>'+(bad.length?'⚠️ '+bad.join('、')+' 是睡覺時間，建議換個時段':'✅ 三地都在清醒時間，可以約！');}
+const shift=d=>{utc+=d;render();};
+now.onclick=()=>{utc=Math.round(Date.now()/3e5)*3e5;render();};
+p1h.onclick=()=>shift(36e5);m1h.onclick=()=>shift(-36e5);
+render();
+</script></body></html>
