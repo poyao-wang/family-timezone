@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>家人視訊時間協調</title>
 <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" href="favicon-64.png" type="image/png" sizes="64x64">
@@ -26,7 +26,7 @@ input{width:100%;font-size:15px;padding:8px;border:1px solid #d3d1cb;border-radi
 .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}
 .ok{background:#dbeddb;color:#1c3829}.mid{background:#fdecc8;color:#402c1b}.bad{background:#ffe2dd;color:#5d1715}
 .bar{display:flex;gap:10px;margin:16px 0 0;flex-wrap:wrap}
-button{border:1px solid #d3d1cb;background:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:14px}button:hover{background:#f1f1ef}
+button{border:1px solid #d3d1cb;background:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:14px;touch-action:manipulation}button:hover{background:#f1f1ef}
 .sum{margin-top:16px;padding:12px 14px;border-radius:10px;background:#f1f1ef;font-size:14px;line-height:1.7}
 .tl{margin-bottom:18px;padding:14px 14px 8px;border:1px solid #e3e2e0;border-radius:12px}
 .tlrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -56,7 +56,7 @@ h3.sec{font-size:14px;color:#787774;font-weight:600;margin:22px 0 10px;border-to
 <div class="bar"><button id="m1h">−1 小時</button><button id="now">⏱ 現在</button><button id="p1h">+1 小時</button></div>
 <div class="sum" id="sum"></div>
 
-<button style="border:none;background:none;color:#9b9a97;font-size:12px;cursor:default;display:block;margin:18px auto 6px" id="ver">v1.0.2</button>
+<button style="border:none;background:none;color:#9b9a97;font-size:12px;cursor:default;display:block;margin:18px auto 6px" id="ver">v1.0.3</button>
 </div>
 <script>
 const Z=[
