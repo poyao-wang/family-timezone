@@ -15,7 +15,7 @@
 .zline{display:block;padding:2px 0}
 .next .sub{font-size:13px;color:#787774;line-height:1.7}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media(max-width:560px){.cards{grid-template-columns:1fr;gap:10px}.card{padding:12px 14px}.name{font-size:14px}input{font-size:16px;padding:8px}.info{font-size:13px}.next .big{font-size:19px;line-height:1.9}.next{padding:14px 16px}}
+@media(max-width:560px){.cards{grid-template-columns:1fr;gap:10px}.card{padding:12px 16px;overflow:hidden}.name{font-size:14px}input{font-size:16px;padding:8px;min-width:0;-webkit-appearance:none;appearance:none}.info{font-size:13px}.next .big{font-size:19px;line-height:1.9}.next{padding:14px 16px}}
 .card{border:1px solid #e3e2e0;border-radius:12px;padding:16px;background:#fbfbfa;transition:.15s}
 .card.active{border-color:#2383e2;box-shadow:0 0 0 2px #2383e233;background:#fff}
 .flag{font-size:26px}.name{font-weight:700;font-size:16px;margin-top:4px}.who{font-size:12px;color:#787774;margin-bottom:10px}
@@ -54,10 +54,11 @@ h3.sec{font-size:14px;color:#787774;font-weight:600;margin:22px 0 10px;border-to
 <div class="bar"><button id="m1h">−1 小時</button><button id="now">⏱ 現在</button><button id="p1h">+1 小時</button></div>
 <div class="sum" id="sum"></div>
 
+<button style="border:none;background:none;color:#9b9a97;font-size:12px;cursor:default;display:block;margin:18px auto 6px" id="ver">v1.0.0</button>
 </div>
 <script>
 const Z=[
- {id:'us',flag:'🇺🇸',name:'美國 · 底特律',who:'姐姐',tz:'America/Detroit'},
+  {id:'us',flag:'🇺🇸',name:'美國 · 底特律',who:'姐姐',tz:'America/Detroit'},
  {id:'de',flag:'🇩🇪',name:'德國 · 漢諾威',who:'我',tz:'Europe/Berlin'},
  {id:'tw',flag:'🇹🇼',name:'台灣 · 台北',who:'媽媽 & 弟弟',tz:'Asia/Taipei'}];
 const pad=n=>String(n).padStart(2,'0');
